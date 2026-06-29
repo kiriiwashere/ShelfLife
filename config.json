@@ -1,0 +1,6 @@
+{
+  "port": 3000,
+  "jwtSecret": "inventory-system-super-secret-key-12345",
+  "dbPath": "./data/db.json",
+  "sessionExpiry": "24h"
+}
