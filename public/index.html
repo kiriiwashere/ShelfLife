@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShelfLife — Predictive Inventory System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Ambient background blobs -->
+  <div class="ambient-light blob-1"></div>
+  <div class="ambient-light blob-2"></div>
+  <div class="ambient-light blob-3"></div>
+  <div id="notification-container"></div>
+
+  <!-- AUTH PANEL -->
+  <div id="auth-panel" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-glow"></div>
+      <div class="auth-header">
+        <div class="logo-mark">
+          <i class="fa-solid fa-cubes-stacked"></i>
+        </div>
+        <h2>ShelfLife</h2>
+        <p id="auth-subtitle">Predictive inventory system</p>
+      </div>
+      <form id="login-form">
+        <div class="input-group">
+          <label for="login-username">Username</label>
+          <div class="input-field">
+            <i class="fa-regular fa-user"></i>
+            <input type="text" id="login-username" placeholder="Enter username" required autocomplete="username">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="login-password">Password</label>
+          <div class="input-field">
+            <i class="fa-regular fa-lock-keyhole"></i>
+            <input type="password" id="login-password" placeholder="Enter password" required autocomplete="current-password">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span>Sign In</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app-workspace" class="workspace-wrapper" style="display: none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-cubes-stacked"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">ShelfLife</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section-label">Navigation</div>
+      <nav class="sidebar-menu">
+        <a href="#dashboard" class="menu-item active" data-view="dashboard">
+          <span class="menu-icon"><i class="fa-solid fa-grid-2"></i></span>
+          <span class="menu-label">Dashboard</span>
+          <span class="menu-indicator"></span>
+        </a>
+        <a href="#inventory" class="menu-item" data-view="inventory">
+          <span class="menu-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+          <span class="menu-label">Inventory</span>
+          <span class="menu-indicator"></span>
+        </a>
+        <a href="#transactions" class="menu-item" data-view="transactions">
+          <span class="menu-icon"><i class="fa-solid fa-list-timeline"></i></span>
+          <span class="menu-label">Usage History</span>
+          <span class="menu-indicator"></span>
+        </a>
+        <a href="#projections" class="menu-item" data-view="projections">
+          <span class="menu-icon"><i class="fa-solid fa-chart-line-up"></i></span>
+          <span class="menu-label">Supply Estimates</span>
+          <span class="menu-indicator"></span>
+        </a>
+        <a href="#users" class="menu-item admin-only" data-view="users" style="display: none;">
+          <span class="menu-icon"><i class="fa-solid fa-users-gear"></i></span>
+          <span class="menu-label">User Accounts</span>
+          <span class="menu-indicator"></span>
+        </a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <div class="user-badge">
+          <div class="avatar">
+            <i class="fa-solid fa-user-astronaut"></i>
+          </div>
+          <div class="user-info">
+            <span id="current-username" class="username">Guest</span>
+            <span id="current-userrole" class="user-role">User</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-icon-logout" title="Sign Out">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content-area">
+      <header class="content-header">
+        <div class="header-left">
+          <div class="header-eyebrow">ShelfLife</div>
+          <h1 id="view-title">Dashboard</h1>
+        </div>
+        <div class="header-actions">
+          <div class="time-widget">
+            <span class="time-dot"></span>
+            <span id="current-time">00:00:00</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="view-content">
+
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- Stat Cards -->
+          <div class="stats-grid">
+            <div class="stat-card" id="stat-card-total">
+              <div class="stat-card-inner">
+                <div class="stat-icon purple">
+                  <i class="fa-solid fa-box"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Total Item Types</span>
+                  <h3 id="stat-total-items" class="stat-value mono">—</h3>
+                </div>
+              </div>
+              <div class="stat-sparkline" id="sparkline-total"></div>
+            </div>
+            <div class="stat-card" id="stat-card-low">
+              <div class="stat-card-inner">
+                <div class="stat-icon amber">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Low Stock Items</span>
+                  <h3 id="stat-low-stock" class="stat-value mono">—</h3>
+                </div>
+              </div>
+              <div class="stat-sparkline" id="sparkline-low"></div>
+            </div>
+            <div class="stat-card" id="stat-card-out">
+              <div class="stat-card-inner">
+                <div class="stat-icon red">
+                  <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Out of Stock</span>
+                  <h3 id="stat-out-of-stock" class="stat-value mono">—</h3>
+                </div>
+              </div>
+              <div class="stat-sparkline" id="sparkline-out"></div>
+            </div>
+            <div class="stat-card" id="stat-card-activity">
+              <div class="stat-card-inner">
+                <div class="stat-icon teal">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Activity (7 days)</span>
+                  <h3 id="stat-recent-activity" class="stat-value mono">—</h3>
+                </div>
+              </div>
+              <div class="stat-sparkline" id="sparkline-activity"></div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid">
+            <div class="glass-card chart-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-chart-bar"></i>
+                  <h3>Category Distribution</h3>
+                </div>
+              </div>
+              <div class="panel-body chart-body">
+                <canvas id="category-bar-chart" height="100"></canvas>
+                <div id="category-fallback-chart" class="custom-donut-chart" style="display:none;"></div>
+              </div>
+            </div>
+            <div class="glass-card chart-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-chart-line"></i>
+                  <h3>7-Day Activity</h3>
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-dot teal"></span><span>Restocks</span>
+                  <span class="legend-dot red"></span><span>Usage</span>
+                </div>
+              </div>
+              <div class="panel-body chart-body">
+                <canvas id="activity-line-chart" height="100"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerts & Quick Actions -->
+          <div class="dashboard-details-grid">
+            <div class="glass-card dashboard-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-bell-exclamation text-amber"></i>
+                  <h3>Stock Level Warnings</h3>
+                </div>
+                <span class="panel-badge amber" id="alert-count-badge">0</span>
+              </div>
+              <div class="panel-body list-panel" id="low-stock-list">
+                <p class="text-muted">Loading warnings...</p>
+              </div>
+            </div>
+            <div class="glass-card dashboard-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <h3>Quick Actions</h3>
+                </div>
+              </div>
+              <div class="panel-body quick-actions-body">
+                <button class="action-tile btn-trigger-add">
+                  <div class="action-tile-icon purple"><i class="fa-solid fa-plus"></i></div>
+                  <div class="action-tile-label">
+                    <strong>New Item</strong>
+                    <span>Add to inventory</span>
+                  </div>
+                </button>
+                <button class="action-tile btn-trigger-restock">
+                  <div class="action-tile-icon teal"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                  <div class="action-tile-label">
+                    <strong>Restock</strong>
+                    <span>Add stock</span>
+                  </div>
+                </button>
+                <button class="action-tile btn-trigger-usage">
+                  <div class="action-tile-icon red"><i class="fa-solid fa-basket-shopping"></i></div>
+                  <div class="action-tile-label">
+                    <strong>Record Usage</strong>
+                    <span>Dispense stock</span>
+                  </div>
+                </button>
+                <button class="action-tile btn-trigger-forecast" onclick="location.hash='#projections'">
+                  <div class="action-tile-icon amber"><i class="fa-solid fa-chart-pie-simple"></i></div>
+                  <div class="action-tile-label">
+                    <strong>Estimates</strong>
+                    <span>View forecast</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="glass-card dashboard-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-history"></i>
+                <h3>Recent Transactions</h3>
+              </div>
+              <a href="#transactions" class="panel-link">View all <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="panel-body list-panel" id="dashboard-recent-transactions">
+              <p class="text-muted">Loading recent logs...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- INVENTORY VIEW -->
+        <section id="view-inventory" class="view-section">
+          <div class="glass-card main-panel">
+            <div class="panel-actions-row">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="inventory-search" placeholder="Search by name, SKU, category...">
+              </div>
+              <div class="filter-actions">
+                <div class="select-wrapper">
+                  <i class="fa-solid fa-filter"></i>
+                  <select id="inventory-category-filter" class="form-select">
+                    <option value="all">All Categories</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary btn-trigger-add">
+                  <i class="fa-solid fa-plus"></i> Add Item
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Alert Level</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">Loading inventory items...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRANSACTIONS VIEW -->
+        <section id="view-transactions" class="view-section">
+          <div class="glass-card main-panel">
+            <div class="panel-actions-row">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="transactions-search" placeholder="Filter by user, SKU, item name...">
+              </div>
+              <div class="filter-actions">
+                <div class="select-wrapper">
+                  <i class="fa-solid fa-filter"></i>
+                  <select id="transactions-type-filter" class="form-select">
+                    <option value="all">All Operations</option>
+                    <option value="usage">Usage Only</option>
+                    <option value="restock">Restock Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="transactions-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>SKU</th>
+                    <th>Item Name</th>
+                    <th>Operation</th>
+                    <th class="text-right">Quantity</th>
+                    <th>Recorded By</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">Loading transaction log...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROJECTIONS VIEW -->
+        <section id="view-projections" class="view-section">
+          <div class="glass-card main-panel">
+            <div class="projection-settings-panel">
+              <div class="setting-col">
+                <label for="projection-days-select">
+                  <i class="fa-regular fa-calendar"></i>
+                  History Window
+                </label>
+                <div class="select-wrapper">
+                  <i class="fa-solid fa-clock"></i>
+                  <select id="projection-days-select" class="form-select">
+                    <option value="7">Last 7 Days — Short-term</option>
+                    <option value="14">Last 14 Days — Medium-term</option>
+                    <option value="30" selected>Last 30 Days — Standard</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setting-col">
+                <label for="simulation-slider">
+                  <i class="fa-solid fa-sliders"></i>
+                  Usage Rate Multiplier: <strong id="slider-val" class="mono">100%</strong>
+                </label>
+                <div class="slider-wrapper">
+                  <span class="mono text-muted">50%</span>
+                  <input type="range" id="simulation-slider" min="50" max="200" step="5" value="100">
+                  <span class="mono text-muted">200%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-alert">
+              <i class="fa-solid fa-circle-info"></i>
+              <p>Estimates are calculated using the average usage rate over the selected window. The multiplier simulates demand changes — e.g. set to 150% for peak-season stress testing.</p>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="projections-table">
+                <thead>
+                  <tr>
+                    <th>Item Details</th>
+                    <th class="text-right">Stock Level</th>
+                    <th class="text-right">Avg Daily Usage</th>
+                    <th class="text-right">Est. Lifespan</th>
+                    <th>Status</th>
+                    <th>Depletion Date</th>
+                  </tr>
+                </thead>
+                <tbody id="projections-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">Calculating forecasts...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- USERS VIEW -->
+        <section id="view-users" class="view-section">
+          <div class="user-view-layout">
+            <div class="glass-card form-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-user-plus"></i>
+                  <h3>Register Account</h3>
+                </div>
+              </div>
+              <form id="admin-create-user-form">
+                <div class="input-group">
+                  <label for="admin-user-name">Username</label>
+                  <div class="input-field">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="admin-user-name" placeholder="Enter username" required>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label for="admin-user-password">Initial Password</label>
+                  <div class="input-field">
+                    <i class="fa-regular fa-key"></i>
+                    <input type="password" id="admin-user-password" placeholder="Min 6 characters" required>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label for="admin-user-role">Assigned Role</label>
+                  <div class="input-field">
+                    <i class="fa-regular fa-shield-halved"></i>
+                    <select id="admin-user-role">
+                      <option value="user" selected>Standard User</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fa-solid fa-user-plus"></i> Register Account
+                </button>
+              </form>
+            </div>
+            <div class="glass-card table-panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-users"></i>
+                  <h3>System Accounts</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Role</th>
+                      <th>Created</th>
+                      <th class="text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-table-body">
+                    <tr>
+                      <td colspan="4" class="text-center text-muted">Loading accounts...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ITEM MODAL -->
+  <div id="item-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="item-modal-title">Add New Inventory Item</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="item-form">
+        <input type="hidden" id="item-form-id">
+        <div class="input-group">
+          <label for="item-form-name">Item Name *</label>
+          <input type="text" id="item-form-name" class="form-input" placeholder="e.g., Premium Printing Paper" required>
+        </div>
+        <div class="form-row">
+          <div class="input-group col-6">
+            <label for="item-form-sku">SKU Code *</label>
+            <input type="text" id="item-form-sku" class="form-input mono" placeholder="e.g., PAP-A4-500" required>
+          </div>
+          <div class="input-group col-6">
+            <label for="item-form-category">Category</label>
+            <input type="text" id="item-form-category" class="form-input" placeholder="e.g., Stationery" list="categories-list">
+            <datalist id="categories-list">
+              <option value="Stationery">
+              <option value="Electronics">
+              <option value="Safety Gear">
+              <option value="Pantry">
+              <option value="Chemicals">
+            </datalist>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group col-4">
+            <label for="item-form-quantity">Initial Stock</label>
+            <input type="number" id="item-form-quantity" class="form-input" min="0" step="any" value="0">
+          </div>
+          <div class="input-group col-4">
+            <label for="item-form-unit">Unit *</label>
+            <input type="text" id="item-form-unit" class="form-input" placeholder="pcs, kg, ream…" value="pcs" required>
+          </div>
+          <div class="input-group col-4">
+            <label for="item-form-safety">Alert Threshold</label>
+            <input type="number" id="item-form-safety" class="form-input" min="0" step="any" value="5">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="item-form-submit-btn">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TRANSACTION MODAL -->
+  <div id="transaction-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="tx-modal-title">Log Stock Adjustment</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="transaction-form">
+        <div class="input-group">
+          <label for="tx-form-item">Select Item *</label>
+          <select id="tx-form-item" class="form-select" required>
+            <option value="">Choose an item...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="input-group col-6">
+            <label for="tx-form-type">Operation Type *</label>
+            <select id="tx-form-type" class="form-select" required>
+              <option value="usage" selected>Record Usage (Dispense)</option>
+              <option value="restock">Record Restock (Add Stock)</option>
+            </select>
+          </div>
+          <div class="input-group col-6">
+            <label for="tx-form-quantity">Quantity * (<span id="tx-unit-label">units</span>)</label>
+            <input type="number" id="tx-form-quantity" class="form-input" min="0.001" step="any" placeholder="0" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="tx-form-notes">Notes / Reason</label>
+          <input type="text" id="tx-form-notes" class="form-input" placeholder="e.g., Monthly brochure printing, warehouse shipment">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
